@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// A movie saved by an anonymous visitor (identified by a cookie).
+model WatchlistItem {
+  id          String   @id @default(cuid())
+  visitorId   String
+  movieId     Int
+  title       String
+  posterPath  String?
+  releaseDate String?
+  voteAverage Float?
+  createdAt   DateTime @default(now())
+
+  @@unique([visitorId, movieId])
+  @@index([visitorId, createdAt])
+}
+
+/// Daily copy of TMDB's "trending today" list, written by an Inngest cron job.
+/// Lets us show rank movement and trending streaks, which TMDB doesn't expose.
+model TrendingSnapshot {
+  id          String   @id @default(cuid())
+  /// UTC calendar day, formatted YYYY-MM-DD
+  date        String
+  movieId     Int
+  rank        Int
+  title       String
+  posterPath  String?
+  popularity  Float
+  voteAverage Float
+  createdAt   DateTime @default(now())
+
+  @@unique([date, movieId])
+  @@index([movieId])
+  @@index([date, rank])
+}
